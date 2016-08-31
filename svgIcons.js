@@ -1,3 +1,11 @@
+/**
+ * SVGIcons 0.1v
+ *
+ * Copyright 2016, Gerard Rodes https://github.com/GerardRodes
+ *
+ * Released under the MIT license - http://opensource.org/licenses/MIT
+ */
+
 /*
 	Inserts svg icons to structures following this pattern
 
