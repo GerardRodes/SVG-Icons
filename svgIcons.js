@@ -5,7 +5,6 @@
  *
  * Released under the MIT license - http://opensource.org/licenses/MIT
  */
-
 /*
 	Inserts svg icons to structures following this pattern
 
@@ -46,7 +45,7 @@
 		color: '#000000',
 		shape: 'normal',
 		size: '24',
-		msg: 'Contacta en ',
+		msg: 'Contact on ',
 		transition: '.35s',
 		target: '_blank',
 		folder: '',
@@ -103,7 +102,7 @@
 		},
 		{
 			name:'skype',
-			hover:'fill:#333333',
+			hover:'fill:#3E9DD7',
 			icon:{
 				circle: '07-skype.svg',
 				normal: '07-skype.svg'
@@ -703,7 +702,7 @@
 				shape: 	$(el).attr('data-shape'),
 				size:  	$(el).attr('data-size'),
 				css: 	$(el).attr('data-css'),
-				hover: 	$(el).attr('data-hover'),
+				hover: 	$(el).attr('data-hover') || '',
 				target: $(el).attr('data-target'),
 				msg: 	$(el).attr('data-msg'),
 				url: 	$(el).attr('data-url'),
@@ -714,9 +713,9 @@
 			imageUrl = getImageUrl(linkOptions),
 			html;
 
-			if(linkOptions.hover == undefined){
-				linkOptions.hover = getHover(linkOptions);
-			}
+			linkOptions.hover = getHover(linkOptions)+';'+listOptions.hover+';'+linkOptions.hover;
+			console.log(linkOptions.hover)
+
 			if(linkOptions.css == true || linkOptions.css == "true"){
 				$(el).css(css.link)
 			}
@@ -738,7 +737,8 @@
 	            								 	var temp = currentValue.split(':')
 	            								 	total[temp[0]] = temp[1];
 	            								 	return total;
-	            								 },{})					 
+	            								 },{})
+	            	clean = {},transition = {};
 
 	            linkTag.attr({
 	            	'href':linkOptions.url,
@@ -747,11 +747,20 @@
 	            })
 	            linkTag.html($(document.createElement('div')).append(svg).html())
 
+	            $.each(hoverAttr,function(i,el){
+            		if(i != 'transition'){
+            			clean[i] = '';
+            		} else {
+            			transition[i] = el;
+            		}
+            	})
+
+	            $(linkTag).find('svg').css(transition)
 	            $(linkTag).hover(function(){
 	            	$(linkTag).find('svg').css(hoverAttr)
 	            },function(){
 	            	$.each(hoverAttr,function(i,el){
-	            		$(linkTag).find('svg').css(i,'')
+	            		$(linkTag).find('svg').css(clean)
 	            	})
 	            })
 
