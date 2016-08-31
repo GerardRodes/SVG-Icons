@@ -13,7 +13,7 @@ This script inserts svg icons to structures following this pattern
 Attributes placed at wrapper will be applied to all children link elements,
 this attributes can be overwritted defining them at link element.
 All attributes must be prefixed by `data-`, example: `data-color="black"`.
-To disable an attribute just defined it with an invalid value, example: `data-hover="none"` (this would disable hover effects, however `data-hover=""` would be enough to disabled it)
+To disable an attribute just defined it with an invalid value, example: `data-hover="none"` (this will disable hover effects, however `data-hover=""` would be enough to disabled it)
 
 ##ATTRIBUTES  
 ```
