@@ -31,7 +31,7 @@ css: 			Boolean, specifies if apply default css
 ##LINKS UNIQUE ATTRIBUTES  
 ```
 url: 			Url to define href of the link tag
-name: 			String to specify the social network, accepted values are store at `socialIcons` variable
+name: 			String to specify the social network, accepted values are stored at `socialIcons` variable
 ```
 
 Some CSS styles are applied to the wrapper and links by default, this styles are defined
