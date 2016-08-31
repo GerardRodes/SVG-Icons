@@ -4,7 +4,7 @@
 ![SVG Icons](http://i.imgur.com/lCJzBTa.gif)  
 
 
-Inserts svg icons to structures following this pattern
+This script inserts svg icons to structures following this pattern
 ```
 [data-social-links]			Wrapper attribute
 	|->	[data-name]			Link element attribute, it can be anywhere inside the wrapper
