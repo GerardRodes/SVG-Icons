@@ -47,7 +47,7 @@ active css styles adding `data-css="true"` on some required elements.
 	<li data-social data-name="facebook" data-url="https://www.facebook.com" data-msg="I never use it, but you can follow me at "></li>
 	<li data-social data-name="twitter" data-url="https://twitter.com"></li>
 	<li data-social data-name="google" data-url="https://plus.google.com"></li>
-	<li data-social data-name="skype" data-url="skype:YourSkypeName?call" data-hover="transform:rotate(360deg) scale(1.5) translate(25px,0);transition: 1s ease-out"></li>
+	<li data-social data-name="skype" data-url="skype:YourSkypeName?call" data-transition="1s ease-out" data-hover="transform:rotate(360deg) scale(1.5) translate(25px,0)"></li>
 </ul>
 ```
 *Will become into this*
