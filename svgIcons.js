@@ -1,5 +1,5 @@
 /**
- * RiojaSlider 0.2v
+ * RiojaSlider 0.1v
  *
  * Copyright 2016, Gerard Rodes https://github.com/GerardRodes
  *
@@ -20,10 +20,10 @@
 	-ATTRIBUTES-				
 	color: 			CSS color string
 	shape: 			( normal | circle )
-	size:        	        Size in px
+	size:        	Size in px
 	hover: 			Hover css effects to apply on hover => data-hover="attr1:value1;attr2:value2;attr3:value3..."
 	msg: 			Message before social network name at title attribue on link tag
-	transition: 	        CSS transition to apply
+	transition: 	CSS transition to apply
 	target: 		target attribute value on link tag
 	folder: 		Url of the folder where the "svg" folder with the images is placed
 	css: 			Boolean, specifies if apply default css
@@ -31,7 +31,7 @@
 
 	-LINKS UNIQUE ATTRIBUTES-
 	url: 			Url to define href of the link tag
-	name: 			String to specify the social network, accepted values are store at `socialIcons` variable on line 48
+	name: 			String to specify the social network, accepted values are store at `socialIcons` variable on line 47
 
 	
 	Some CSS styles are applied to the wrapper and links by default, this styles are defined
@@ -186,7 +186,7 @@
             }
         }, {
             name: 'rss',
-            hover: 'fill:#333333',
+            hover: 'fill:#F58432',
             icon: {
                 circle: '20-rss.svg',
                 normal: '20-rss.svg'
@@ -628,7 +628,6 @@
                     shape: $(el).attr('data-shape'),
                     size: $(el).attr('data-size'),
                     css: $(el).attr('data-css'),
-                    hover: $(el).attr('data-hover'),
                     target: $(el).attr('data-target'),
                     msg: $(el).attr('data-msg'),
                     url: $(el).attr('data-url'),
@@ -639,38 +638,43 @@
                 imageUrl = getImageUrl(linkOptions),
                 html;
 
-            if ($(el).attr('data-style') == "" || $(el).attr('data-style') == "false") {
-                linkOptions.style = undefined;
+            if($(el).attr('data-style') == "" || $(el).attr('data-style') == "false"){
+            	linkOptions.style = undefined;
             } else {
-                linkOptions.style += ';' + $(el).attr('data-style');
+            	linkOptions.style += ';'+$(el).attr('data-style');
             }
 
-            if (linkOptions.hover == undefined) {
-                linkOptions.hover = getHover(linkOptions);
+            if($(el).attr('data-hover') == "" || $(el).attr('data-hover') == "false"){
+                linkOptions.hover = undefined;
+            } else {
+                linkOptions.hover += ';'+getHover(linkOptions)+';'+$(el).attr('data-hover');
             }
+            
             if (linkOptions.css == true || linkOptions.css == "true") {
                 $(el).css(css.link)
             }
-            var cachedIcon = getCached(linkOptions.name);
+            var cachedIcon = getCached(linkOptions);
             switch (cachedIcon) {
                 case 'notCached':
                     cache.push({
                         name: linkOptions.name,
-                        svg: 'loading'
+                        svg: 'loading',
+                        shape: linkOptions.shape
                     })
                     $.get(imageUrl,
                         function(data) {
                             svg = $(data).find('svg')
                                 .removeAttr('xmlns:a');
-                            cachedItem = getCached(linkOptions.name);
+                            cachedItem = getCached(linkOptions);
                             cachedItem.svg = svg;
 
                             loadQueue.push({
                                 options: linkOptions,
-                                element: $(el)
+                                element: $(el),
+                                shape: linkOptions.shape
                             })
 
-                            $.each(getLoadQueue(linkOptions.name), function(i, waitingIcon) {
+                            $.each(getLoadQueue(linkOptions), function(i, waitingIcon) {
                                 $(waitingIcon.element).html(buildIcon(waitingIcon.options, svg, i));
                                 loadQueue = removeElement(loadQueue, waitingIcon);
                             })
@@ -679,7 +683,8 @@
                 case 'loading':
                     loadQueue.push({
                         options: linkOptions,
-                        element: $(el)
+                        element: $(el),
+                        shape: linkOptions.shape
                     })
                     break;
                 default:
@@ -727,36 +732,37 @@
         })
         linkTag.html($(document.createElement('div')).append(svg).html())
 
-        if (styleAttr) {
-            $(linkTag).find('svg').css(styleAttr)
+        if(styleAttr){
+        	$(linkTag).find('svg').css(styleAttr)
         }
-
-        $(linkTag).hover(function() {
-            $(linkTag).find('svg').css(hoverAttr)
-        }, function() {
-            $.each(hoverAttr, function(i, el) {
-                $(linkTag).find('svg').css(i, '')
+        if(hoverAttr){
+            $(linkTag).hover(function() {
+                $(linkTag).find('svg').css(hoverAttr)
+            }, function() {
+                $.each(hoverAttr, function(i, el) {
+                    $(linkTag).find('svg').css(i, '')
+                })
             })
-        })
+        }
         return linkTag
     }
 
-    function parseCss(string) {
-        if (string == undefined) {
-            return false;
-        } else {
-            return string.split(';')
-                .reduce(function(total, currentValue, currentIndex, arr) {
-                    var temp = currentValue.split(':')
-                    total[temp[0]] = temp[1];
-                    return total;
-                }, {});
-        }
+    function parseCss(string){
+    	if(string == undefined){
+    		return false;
+    	} else {
+    		return string.split(';')
+		            .reduce(function(total, currentValue, currentIndex, arr) {
+		                var temp = currentValue.split(':')
+		                total[temp[0]] = temp[1];
+		                return total;
+		            }, {});
+    	}
     }
 
-    function getCached(name) {
+    function getCached(options) {
         cachedIcon = $.grep(cache, function(el) {
-            return el.name == name
+            return el.name == options.name && el.shape == options.shape
         })[0];
 
         if (cachedIcon == undefined) {
@@ -768,9 +774,9 @@
         }
     }
 
-    function getLoadQueue(queueName) {
+    function getLoadQueue(options) {
         return $.grep(loadQueue, function(el) {
-            return el.options.name == queueName
+            return el.options.name == options.name && el.options.shape == options.shape
         });
     }
 
