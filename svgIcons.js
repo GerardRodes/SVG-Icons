@@ -1,5 +1,5 @@
 /**
- * SVGIcons 0.1v
+ * RiojaSlider 0.2v
  *
  * Copyright 2016, Gerard Rodes https://github.com/GerardRodes
  *
@@ -20,17 +20,18 @@
 	-ATTRIBUTES-				
 	color: 			CSS color string
 	shape: 			( normal | circle )
-	size:        	Size in px
-	hover: 			Hover css effectos to apply on hover => data-hover="attr1:value1;attr2:value2;attr3:value3..."
+	size:        	        Size in px
+	hover: 			Hover css effects to apply on hover => data-hover="attr1:value1;attr2:value2;attr3:value3..."
 	msg: 			Message before social network name at title attribue on link tag
-	transition: 	CSS transition to apply
+	transition: 	        CSS transition to apply
 	target: 		target attribute value on link tag
 	folder: 		Url of the folder where the "svg" folder with the images is placed
 	css: 			Boolean, specifies if apply default css
+	style: 			css effects to apply on SVG
 
 	-LINKS UNIQUE ATTRIBUTES-
 	url: 			Url to define href of the link tag
-	name: 			String to specify the social network, accepted values are store at `socialIcons` variable on line 47
+	name: 			String to specify the social network, accepted values are store at `socialIcons` variable on line 48
 
 	
 	Some CSS styles are applied to the wrapper and links by default, this styles are defined
@@ -44,7 +45,7 @@
             color: '#000000',
             shape: 'normal',
             size: '24',
-            msg: 'Contact on ',
+            msg: 'Contacta en ',
             transition: '.35s',
             target: '_blank',
             folder: '',
@@ -94,7 +95,7 @@
             }
         }, {
             name: 'skype',
-            hover: 'fill:#3E9DD7',
+            hover: 'fill:#333333',
             icon: {
                 circle: '07-skype.svg',
                 normal: '07-skype.svg'
@@ -595,7 +596,9 @@
                 padding: '0',
                 transition: '.35s'
             }
-        };
+        },
+        cache = [],
+        loadQueue = [];
 
     var socialLists = $('[data-social-links]');
 
@@ -607,6 +610,7 @@
                 target: $(el).attr('data-target'),
                 css: $(el).attr('data-css'),
                 hover: $(el).attr('data-hover'),
+                style: $(el).attr('data-style'),
                 msg: $(el).attr('data-msg'),
                 transition: $(el).attr('data-transition'),
                 folder: $(el).attr('data-folder')
@@ -624,7 +628,7 @@
                     shape: $(el).attr('data-shape'),
                     size: $(el).attr('data-size'),
                     css: $(el).attr('data-css'),
-                    hover: $(el).attr('data-hover') || '',
+                    hover: $(el).attr('data-hover'),
                     target: $(el).attr('data-target'),
                     msg: $(el).attr('data-msg'),
                     url: $(el).attr('data-url'),
@@ -635,54 +639,54 @@
                 imageUrl = getImageUrl(linkOptions),
                 html;
 
-            linkOptions.hover = getHover(linkOptions) + ';' + listOptions.hover + ';' + linkOptions.hover;
+            if ($(el).attr('data-style') == "" || $(el).attr('data-style') == "false") {
+                linkOptions.style = undefined;
+            } else {
+                linkOptions.style += ';' + $(el).attr('data-style');
+            }
 
+            if (linkOptions.hover == undefined) {
+                linkOptions.hover = getHover(linkOptions);
+            }
             if (linkOptions.css == true || linkOptions.css == "true") {
                 $(el).css(css.link)
             }
-
-            $.get(imageUrl,
-                function(data) {
-                    var linkTag = $(document.createElement('a')),
-                        svg = $(data).find('svg')
-                        .removeAttr('xmlns:a')
-                        .css('transition', linkOptions.transition)
-                        .attr({
-                            'height': linkOptions.size,
-                            'width': linkOptions.size,
-                            'id': 'social-link-' + linkOptions.name + '-' + i,
-                            'fill': linkOptions.color
-                        }),
-                        hoverAttr = linkOptions.hover.split(';')
-                        .reduce(function(total, currentValue, currentIndex, arr) {
-                            var temp = currentValue.split(':')
-                            total[temp[0]] = temp[1];
-                            return total;
-                        }, {}),
-                        clean = {};
-
-                    linkTag.attr({
-                        'href': linkOptions.url,
-                        'title': linkOptions.msg + capitalizeFirstLetter(linkOptions.name),
-                        'target': linkOptions.target
+            var cachedIcon = getCached(linkOptions.name);
+            switch (cachedIcon) {
+                case 'notCached':
+                    cache.push({
+                        name: linkOptions.name,
+                        svg: 'loading'
                     })
-                    linkTag.html($(document.createElement('div')).append(svg).html())
+                    $.get(imageUrl,
+                        function(data) {
+                            svg = $(data).find('svg')
+                                .removeAttr('xmlns:a');
+                            cachedItem = getCached(linkOptions.name);
+                            cachedItem.svg = svg;
 
+                            loadQueue.push({
+                                options: linkOptions,
+                                element: $(el)
+                            })
 
-                    $(linkTag).find('svg').css('transition', linkOptions.transition)
-                    $.each(hoverAttr, function(i, el) {
-                        clean[i] = '';
-                    })
-                    $(linkTag).hover(function() {
-                        $(linkTag).find('svg').css(hoverAttr)
-                    }, function() {
-                        $.each(hoverAttr, function(i, el) {
-                            $(linkTag).find('svg').css(clean)
+                            $.each(getLoadQueue(linkOptions.name), function(i, waitingIcon) {
+                                $(waitingIcon.element).html(buildIcon(waitingIcon.options, svg, i));
+                                loadQueue = removeElement(loadQueue, waitingIcon);
+                            })
                         })
+                    break;
+                case 'loading':
+                    loadQueue.push({
+                        options: linkOptions,
+                        element: $(el)
                     })
+                    break;
+                default:
+                    $(el).html(buildIcon(linkOptions, cachedIcon.svg, i));
+                    break;
+            }
 
-                    $(el).html(linkTag)
-                })
         })
     })
 
@@ -702,5 +706,77 @@
 
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    function buildIcon(linkOptions, svg, i) {
+        var svg = svg.css('transition', linkOptions.transition)
+            .attr({
+                'height': linkOptions.size,
+                'width': linkOptions.size,
+                'id': 'social-link-' + linkOptions.name + '-' + i,
+                'fill': linkOptions.color
+            }),
+            linkTag = $(document.createElement('a')),
+            hoverAttr = parseCss(linkOptions.hover),
+            styleAttr = parseCss(linkOptions.style);
+
+        linkTag.attr({
+            'href': linkOptions.url,
+            'title': linkOptions.msg + capitalizeFirstLetter(linkOptions.name),
+            'target': linkOptions.target
+        })
+        linkTag.html($(document.createElement('div')).append(svg).html())
+
+        if (styleAttr) {
+            $(linkTag).find('svg').css(styleAttr)
+        }
+
+        $(linkTag).hover(function() {
+            $(linkTag).find('svg').css(hoverAttr)
+        }, function() {
+            $.each(hoverAttr, function(i, el) {
+                $(linkTag).find('svg').css(i, '')
+            })
+        })
+        return linkTag
+    }
+
+    function parseCss(string) {
+        if (string == undefined) {
+            return false;
+        } else {
+            return string.split(';')
+                .reduce(function(total, currentValue, currentIndex, arr) {
+                    var temp = currentValue.split(':')
+                    total[temp[0]] = temp[1];
+                    return total;
+                }, {});
+        }
+    }
+
+    function getCached(name) {
+        cachedIcon = $.grep(cache, function(el) {
+            return el.name == name
+        })[0];
+
+        if (cachedIcon == undefined) {
+            return 'notCached';
+        } else if (cachedIcon.svg == 'loading') {
+            return 'loading';
+        } else {
+            return cachedIcon;
+        }
+    }
+
+    function getLoadQueue(queueName) {
+        return $.grep(loadQueue, function(el) {
+            return el.options.name == queueName
+        });
+    }
+
+    function removeElement(array, element) {
+        return $.grep(array, function(el) {
+            return el != element
+        });
     }
 })(jQuery);
