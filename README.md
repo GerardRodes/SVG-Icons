@@ -26,6 +26,7 @@ transition: 	CSS transition to apply
 target: 		target attribute value on link tag
 folder: 		Url of the folder where the "svg" folder with the images is placed
 css: 			Boolean, specifies if apply default css
+style: 			css effects to apply on SVG
 ```
 
 ##LINKS UNIQUE ATTRIBUTES  
