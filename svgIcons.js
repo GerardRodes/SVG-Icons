@@ -1,5 +1,5 @@
 /**
- * RiojaSlider 0.1v
+ * SVGIcons 0.1v
  *
  * Copyright 2016, Gerard Rodes https://github.com/GerardRodes
  *
