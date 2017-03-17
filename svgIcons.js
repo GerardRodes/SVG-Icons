@@ -132,7 +132,7 @@
             }
         }, {
             name: 'vimeo',
-            hover: 'fill:#333333',
+            hover: 'fill:#00B3EC',
             icon: {
                 circle: '13-vimeo.svg',
                 normal: '13-vimeo.svg'
@@ -578,6 +578,30 @@
                 circle: '76-producthunt.svg',
                 normal: '76-producthunt.svg'
             }
+        }, {
+            name: 'minube',
+            hover: 'fill:#67D600',
+            icon: {
+                circle: 'minube.svg'
+            }
+        }, {
+            name: 'foursquare',
+            hover: 'fill:#F94877',
+            icon: {
+                circle: 'foursquare.svg'
+            }
+        }, {
+            name: 'more',
+            hover: 'fill:#333333',
+            icon: {
+                circle: 'more.svg'
+            }
+        }, {
+            name: 'tripadvisor',
+            hover: 'fill:#589642',
+            icon: {
+                circle: 'tripadvisor.svg'
+            }
         }],
         css = {
             list: {
@@ -633,67 +657,75 @@
                 imageUrl = getImageUrl(linkOptions),
                 html;
 
-            if($(el).attr('data-style') == "" || $(el).attr('data-style') == "false"){
-              linkOptions.style = undefined;
+            if (linkOptions == undefined || imageUrl == undefined) {
+
+                $(el).remove()
+
             } else {
-              linkOptions.style += ';'+$(el).attr('data-style');
-            }
 
-            if($(el).attr('data-hover') == "" || $(el).attr('data-hover') == "false"){
-                linkOptions.hover = undefined;
-            } else {
-                linkOptions.hover += ';'+getHover(linkOptions)+';'+$(el).attr('data-hover');
-            }
-            
-            if (linkOptions.css == true || linkOptions.css == "true") {
-                $(el).css(css.link)
-            }
-            var cachedIcon = getCached(linkOptions);
-            switch (cachedIcon) {
-                case 'notCached':
-                    cache.push({
-                        name: linkOptions.name,
-                        svg: 'loading',
-                        shape: linkOptions.shape
-                    })
-                    $.get(imageUrl,
-                        function(data) {
-                            svg = $(data).find('svg')
-                                .removeAttr('xmlns:a');
+                if($(el).attr('data-style') == "" || $(el).attr('data-style') == "false"){
+                  linkOptions.style = undefined;
+                } else {
+                  linkOptions.style += ';'+$(el).attr('data-style');
+                }
 
-                            if (svg.length == 0){
-                              $(data).each(function(i, el){
-                                if (el.tagName == 'svg') {
-                                  svg = $(el)
-                                }
-                              })
-                            }
-
-                            cachedItem = getCached(linkOptions);
-                            cachedItem.svg = svg;
-
-                            loadQueue.push({
-                                options: linkOptions,
-                                element: $(el),
-                                shape: linkOptions.shape
-                            })
-
-                            $.each(getLoadQueue(linkOptions), function(i, waitingIcon) {
-                                $(waitingIcon.element).html(buildIcon(waitingIcon.options, svg, i));
-                                loadQueue = removeElement(loadQueue, waitingIcon);
-                            })
+                if($(el).attr('data-hover') == "" || $(el).attr('data-hover') == "false"){
+                    linkOptions.hover = undefined;
+                } else {
+                    linkOptions.hover += ';'+getHover(linkOptions)+';'+$(el).attr('data-hover');
+                }
+                
+                if (linkOptions.css == true || linkOptions.css == "true") {
+                    $(el).css(css.link)
+                }
+                var cachedIcon = getCached(linkOptions);
+                switch (cachedIcon) {
+                    case 'notCached':
+                        cache.push({
+                            name: linkOptions.name,
+                            svg: 'loading',
+                            shape: linkOptions.shape
                         })
-                    break;
-                case 'loading':
-                    loadQueue.push({
-                        options: linkOptions,
-                        element: $(el),
-                        shape: linkOptions.shape
-                    })
-                    break;
-                default:
-                    $(el).html(buildIcon(linkOptions, cachedIcon.svg, i));
-                    break;
+                        $.get(imageUrl,
+                            function(data) {
+                                svg = $(data).find('svg')
+                                    .removeAttr('xmlns:a');
+
+                                if (svg.length == 0){
+                                  $(data).each(function(i, el){
+                                    if (el.tagName == 'svg') {
+                                      svg = $(el)
+                                    }
+                                  })
+                                }
+
+                                cachedItem = getCached(linkOptions);
+                                cachedItem.svg = svg;
+
+                                loadQueue.push({
+                                    options: linkOptions,
+                                    element: $(el),
+                                    shape: linkOptions.shape
+                                })
+
+                                $.each(getLoadQueue(linkOptions), function(i, waitingIcon) {
+                                    $(waitingIcon.element).html(buildIcon(waitingIcon.options, svg, i));
+                                    loadQueue = removeElement(loadQueue, waitingIcon);
+                                })
+                            })
+                        break;
+                    case 'loading':
+                        loadQueue.push({
+                            options: linkOptions,
+                            element: $(el),
+                            shape: linkOptions.shape
+                        })
+                        break;
+                    default:
+                        $(el).html(buildIcon(linkOptions, cachedIcon.svg, i));
+                        break;
+                }
+
             }
 
         })
@@ -702,15 +734,24 @@
     function getImageUrl(linkOptions) {
         var imgName = socialIcons.filter(function(el) {
             return el.name == linkOptions.name
-        })[0].icon[linkOptions.shape];
-        return linkOptions.folder + 'svg/' + linkOptions.shape + '/' + imgName;
+        })[0];
+        if (imgName) {
+            return linkOptions.folder + 'svg/' + linkOptions.shape + '/' + imgName.icon[linkOptions.shape];
+        } else {
+            console.warn(linkOptions.name + ' no svg available')
+            return undefined
+        }
     }
 
     function getHover(linkOptions) {
         var hover = socialIcons.filter(function(el) {
             return el.name == linkOptions.name
-        })[0].hover;
-        return hover;
+        })[0];
+        if (hover) {
+            return hover.hover;
+        } else {
+            return undefined
+        }
     }
 
     function capitalizeFirstLetter(string) {
